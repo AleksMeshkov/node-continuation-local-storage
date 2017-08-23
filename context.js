@@ -54,8 +54,20 @@ Namespace.prototype.run = function (fn) {
     }
     throw exception;
   }
-  finally {
-    this.exit(context);
+  finally {    
+    // TODO: need more abstraction here
+    // If we have a response object in the context
+    // we want the context to be alive until response is sent.
+    if (context && context.res) {
+      var self = this;
+      context.res.on('finish', function () {
+        // response was sent. kill the context
+        self.exit(context);
+      });
+    } else {    
+      // default action
+      this.exit(context);
+    }
   }
 };
 
